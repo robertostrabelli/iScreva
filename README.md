@@ -1,6 +1,6 @@
 # iScreva: a alma perfeita para o seu iWriterDeck
 
-**iScreva** é um editor de texto puro que funciona em praticamente qualquer navegador, de 2012 até hoje. Nasceu pensado especificamente para o iPod touch de quarta geração, mas roda bem em qualquer coisa com tela e navegador web.
+**iScreva** é um editor de texto puro que funciona em praticamente qualquer versão de navegador de 2012 até hoje. Nasceu pensado especificamente para o iPod touch de quarta geração, mas roda bem em qualquer coisa com uma tela e um teclado.
 
 ![iPod de quarta geração conectado a um dock de teclado do iPad](dev/exemplos/ipod_dock.png)
 
