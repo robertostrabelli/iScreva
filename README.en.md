@@ -1,3 +1,8 @@
+[![en](https://img.shields.io/badge/lang-en-blue.svg)](README.md)
+[![pt-br](https://img.shields.io/badge/lang-pt--br-yellow.svg)](README.pt-br.md)
+
+***Translated from Portuguese***
+
 # iScreva: the perfect soul for your iWriterDeck
 
 **iScreva** is a plain-text editor that runs on pretty much any browser version from 2012 to today. It was designed specifically for the 4th-generation iPod touch, but it works well on anything with a screen and a keyboard.
