@@ -18,7 +18,7 @@ A maioria das pessoas que constrói _writer decks_ chega lá pelo hardware — s
 
 Veja algumas telas de exemplo (prints do iPod):
 
-![Tela de login](dev/exemplos/01.PNG)
+![Tela de login](dev/exemplos/01.png)
 ![Criando um arquivo de texto](dev/exemplos/02.png)
 ![Lista de arquivos](dev/exemplos/03.png)
 ![Visualizando um texto](dev/exemplos/04.png)
