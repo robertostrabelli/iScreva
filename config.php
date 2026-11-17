@@ -3,6 +3,7 @@ require_once __DIR__ . '/comum.php';
 
 cabecalhosSeguranca();
 iniciarSessao();
+iniciarIdioma();
 
 if (!isset($_SESSION['logado'])) {
     header('Location: index.php');
@@ -36,38 +37,38 @@ $existeDB = dbExiste();
         'tecla_u5.png'     => 'Vintage Ouro', 
     ];
 
-    $descricoes_tecla = [
-        'tecla_default.png' => 'Tecla Default: a tecla que nunca atrapalha. Neutra e discreta, feita para sumir sob o dedo e deixar a palavra em evidência.',
-        'tecla_osm.png' => 'Tecla Monica: amarelo que não pede desculpas. Ela não se esconde na escrivaninha — ela é o motivo de você olhar duas vezes antes de começar.',
-        'tecla_osm2.png' => 'Tecla Berlim: roxo profundo com alma de arte. Quem a escolhe não quer só escrever, quer que a escrita pareça uma decisão de estilo.',
-        'tecla_ftp1.png'   => 'Tecla Nórdica: um cinza-pedra sóbrio e arquitetônico. Para quem escreve com disciplina e gosta de ferramentas que só apoiam, sem competir com o texto.',
-        'tecla_hb57.png'   => 'Tecla Verão 57: verde-menta suave, leve e otimista. Para escrever em qualquer lugar, com a leveza de quem viaja.',
-        'tecla_is.png'     => 'Tecla Executiva: preto fosco e presença sólida. Precisão e ritmo para quem escreve com foco e sem enrolação.',
-        'tecla_ol32.png'   => 'Tecla Riviera: azul-gelo suave e puro. Elegância funcional, bonita sem ostentação, prática sem ser fria.',
-        'tecla_ov.png'     => 'Tecla Valentine: vermelho vibrante e provocador. A tecla-manifesto de quem escreve como quem se expressa.',
-        'tecla_scs55.png'  => 'Tecla Esmeralda: verde profundo, quase uma joia. Confiança e permanência para quem escreve pensando em deixar algo que dure.',
-        'tecla_u5.png'     => 'Tecla Vintage Ouro: preto profundo com um anel dourado. A raiz de tudo, num detalhe só: solidez e requinte.',
-    ];
+    $descricoes_tecla = array(
+    'tecla_default.png' => t('tecla_default_desc'),
+    'tecla_osm.png'     => t('tecla_osm_desc'),
+    'tecla_osm2.png'    => t('tecla_osm2_desc'),
+    'tecla_ftp1.png'    => t('tecla_ftp1_desc'),
+    'tecla_hb57.png'    => t('tecla_hb57_desc'),
+    'tecla_is.png'      => t('tecla_is_desc'),
+    'tecla_ol32.png'    => t('tecla_ol32_desc'),
+    'tecla_ov.png'      => t('tecla_ov_desc'),
+    'tecla_scs55.png'   => t('tecla_scs55_desc'),
+    'tecla_u5.png'      => t('tecla_u5_desc'),
+);
 
-    $descricoes_fonte = [
-        'TT2020'           => 'Fonte TT2020: cada letra sai um pouco diferente da anterior — de propósito. É a fonte que devolve à tela o acaso do impacto real de uma tecla no papel. Criada por Fredrick R. Brennan em 2018, inspirada nas esferas de tipo da IBM Selectric, ela garante que dez "E" seguidos nunca sejam idênticos. Não é imitação de máquina de escrever — é a textura dela, capturada glifo por glifo.',
-        'domitian'     => 'Fonte Domitian: uma serifa que carrega décadas de tipografia clássica no corpo do texto — versaletes, algarismos old-style, a cadência de um livro bem composto. Desenvolvida por Daniel Benjamin Miller em 2020, ela reconstrói em código aberto o desenho de Hermann Zapf para a Palatino, uma das serifas mais lidas do século XX. Para quem quer que o texto pareça impresso antes mesmo de ser impresso.',
-        'markerfelt'   => 'Fonte Marker Felt: a caligrafia que escapou da caneta. Desenhada por Pat Snyder para a Apple no início dos anos 1990, ela trouxe o traço grosso e imperfeito da caneta hidrográfica para dentro da tela — um respiro de informalidade em meio a tanta fonte séria.',
-        'merriweather' => 'Fonte Merriweather: serifa pensada para a era em que ninguém mais lê só em papel. Criada por Eben Sorkin em 2010, com um x-height generoso e formas abertas herdadas de clássicas como a Garamond, ela prova que tradição e tela não são inimigas — só precisavam de alguém disposto a redesenhar a ponte entre as duas.',
-        'noteworthy'   => 'Fonte Noteworthy: a letra que parece um bilhete deixado às pressas — e é exatamente essa a intenção. Criada para a Apple por volta de 2009 pelo designer de tipos Patrick Griffin, da Canada Type, a Noteworthy foi concebida como uma fonte manuscrita casual, simulando o traço de um marcador. Foi inspirada na fonte Filmotype Brooklyn. Ela troca a formalidade pela sensação de anotação pessoal, como se alguém tivesse escrito só para você.',
-        'monospace'    => 'Fonte Monospace do sistema:  a fonte de largura fixa padrão do seu aparelho. Sem floreios: cada caractere ocupa o mesmo espaço, como numa máquina de escrever comum.',
-        'serif'        => 'Fonte Serifada do sistema: a serifa padrão do seu aparelho. Tradicional e confortável para leitura longa, sem depender de uma fonte específica.',
-        'sans-serif'   => 'Fonte Sem serifa do sistema: a fonte de traços limpos padrão do seu aparelho. Direta e moderna, sem serifas nas pontas das letras.',
-        'cursive'      => 'Fonte Cursiva do sistema: a fonte cursiva padrão do seu aparelho, com traços conectados que lembram a escrita à mão.',
-    ];
+    $descricoes_fonte = array(
+    'TT2020'      => t('fonte_tt2020_desc'),
+    'domitian'    => t('fonte_domitian_desc'),
+    'markerfelt'  => t('fonte_markerfelt_desc'),
+    'merriweather'=> t('fonte_merriweather_desc'),
+    'noteworthy'  => t('fonte_noteworthy_desc'),
+    'monospace'   => t('fonte_monospace_desc'),
+    'serif'       => t('fonte_serif_desc'),
+    'sans-serif'  => t('fonte_sans_desc'),
+    'cursive'     => t('fonte_cursive_desc'),
+);
 
 $camposCor = array(
-    'cor_fundo'        => 'Cor do fundo geral',
-    'cor_barra'        => 'Cor da barra de ferramentas superior e inferior',
-    'cor_texto'        => 'Cor do texto geral',
-    'cor_editor_fundo' => 'Cor do fundo do editor',
-    'cor_editor_texto' => 'Cor do texto do editor',
-    'cor_tecla_texto'  => 'Cor do texto da tecla'
+    'cor_fundo'        => t('config_cor_fundo'),
+    'cor_barra'        => t('config_cor_barra'),
+    'cor_texto'        => t('config_cor_texto'),
+    'cor_editor_fundo' => t('config_cor_editor_fundo'),
+    'cor_editor_texto' => t('config_cor_editor_texto'),
+    'cor_tecla_texto'  => t('config_cor_tecla_texto')
 );
 
 $opcoes_fonte = array(
@@ -76,30 +77,30 @@ $opcoes_fonte = array(
     'markerfelt'   => 'Marker Felt',
     'merriweather' => 'Merriweather',
     'noteworthy'   => 'Noteworthy',
-    'monospace'    => 'Monospace do sistema',
-    'serif'        => 'Serifada do sistema',
-    'sans-serif'   => 'Sem serifa do sistema',
-    'cursive'      => 'Cursiva do sistema'
+    'monospace'    => t('config_fonte_monospace'),
+    'serif'        => t('config_fonte_serif'),
+    'sans-serif'   => t('config_fonte_sans'),
+    'cursive'      => t('config_fonte_cursive')
 );
 
 $opcoes_peso = array(
     'normal' => 'Normal',
-    '300'    => 'Leve (300)',
-    '500'    => 'Médio (500)',
-    '600'    => 'Semi-negrito (600)',
-    'bold'   => 'Negrito',
-    '800'    => 'Extra-negrito (800)'
+    '300'    => t('config_peso_leve'),
+    '500'    => t('config_peso_medio'),
+    '600'    => t('config_peso_seminegrito'),
+    'bold'   => t('config_peso_negrito'),
+    '800'    => t('config_peso_extranegrito')
 );
 
 $desabilitar = $existeDB ? '' : ' disabled';
 
 ?><!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="<?php echo htmlspecialchars(langCodeHtml()); ?>">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow,noimageindex,noarchive">
-<title>iScreva - Configurações</title>
+<title><?php echo te('titulo_app'); ?> - <?php echo te('configuracoes'); ?></title>
 <style>
 
 @font-face {
@@ -324,10 +325,6 @@ button.acao[disabled] {
         0 0 0 5px <?php echo htmlspecialchars($config['cor_fundo']); ?>;
 }
 
-
-
-
-
 .logo img {
     max-width: 100%;
 }
@@ -354,16 +351,16 @@ button.acao[disabled] {
 </head>
 <body>
 <header>
-<div class="logo"><img id="logoPreview" src="images/<?php echo h($logoImagem); ?>" alt="iScreva"></div>
-<h1>Configurações</h1>
+<div class="logo"><img id="logoPreview" src="images/<?php echo h($logoImagem); ?>" alt="<?php echo te('titulo_app'); ?>"></div>
+<h1><?php echo te('configuracoes'); ?></h1>
 </header>
 
 <div class="container">
-<div class="mensagem" id="mensagem">Configuração salva.</div>
+<div class="mensagem" id="mensagem"><?php echo te('config_salva'); ?></div>
 
 <?php if (!$existeDB): ?>
 <div class="mensagem" style="display:block;background:#fff4ce;border-color:#e6cf78;">
-    O banco de dados ainda não foi criado. Crie o primeiro texto no iScreva antes de salvar configurações.
+    <?php echo te('config_sem_db'); ?>
 </div>
 <?php endif; ?>
 
@@ -373,9 +370,9 @@ button.acao[disabled] {
 
 <div class="coluna">
 
-<h3 class="coluna-titulo">Teclas</h3>
+<h3 class="coluna-titulo"><?php echo te('config_teclas'); ?></h3>
 
-<span class="rotulo">Escolha suas teclas</span>
+<span class="rotulo"><?php echo te('config_escolha_teclas'); ?></span>
 
 <input type="hidden" id="tecla_imagem" name="tecla_imagem" value="<?php echo h($config['tecla_imagem']); ?>">
 
@@ -400,17 +397,27 @@ foreach ($opcoes_tecla as $valor => $rotulo) {
 
 <div class="campo" style="border:2px solid #222;padding:12px;border-radius:4px;background:#fff8dc;">
     <label style="display:block;font-weight:700;margin-bottom:6px;cursor:pointer;">
-        <input type="checkbox" id="estilo_neobrutalista" value="1"<?php echo ($config['estilo_neobrutalista'] === '1') ? ' checked' : ''; ?>>Nada disso, quero ser brutal!</label>
-    <p class="nota" style="margin:0;">
-        Visual ousado, com cores fortes. Substitui todas as demais opções visuais e somente as configurações de fonte podem ser customizadas.
-    </p>
+        <input type="checkbox" id="estilo_neobrutalista" value="1"<?php echo ($config['estilo_neobrutalista'] === '1') ? ' checked' : ''; ?>><?php echo te('config_neo'); ?></label>
+    <p class="nota" style="margin:0;"><?php echo te('config_neo_nota'); ?></p>
 </div>
 
 </div>
 
 <div class="coluna">
 
-<h3 class="coluna-titulo">Cores e fonte</h3>
+<div class="campo">
+    <label for="idioma"><?php echo te('config_idioma'); ?></label>
+    <select id="idioma">
+    <?php foreach (idiomasDisponiveis() as $cod => $rotulo): ?>
+        <option value="<?php echo h($cod); ?>"<?php echo ($LANG_CODE === $cod ? ' selected' : ''); ?>>
+            <?php echo h($rotulo); ?>
+        </option>
+    <?php endforeach; ?>
+    </select>
+    <p class="nota"><?php echo te('config_idioma_nota'); ?></p>
+</div>
+
+<h3 class="coluna-titulo"><?php echo te('config_cores_fonte'); ?></h3>
 
 <?php foreach ($camposCor as $chave => $nome): ?>
 <div class="campo">
@@ -427,7 +434,7 @@ foreach ($opcoes_tecla as $valor => $rotulo) {
 <?php endforeach; ?>
 
 <div class="campo">
-<label for="fonte_familia">Fonte</label>
+<label for="fonte_familia"><?php echo te('config_fonte'); ?></label>
 <select id="fonte_familia">
 <?php foreach ($opcoes_fonte as $valor => $rotulo): ?>
     <option value="<?php echo h($valor); ?>"<?php echo ($config['fonte_familia'] === $valor) ? ' selected' : ''; ?>><?php echo h($rotulo); ?></option>
@@ -436,22 +443,22 @@ foreach ($opcoes_tecla as $valor => $rotulo) {
 </div>
 
 <div class="campo">
-<label for="fonte_tamanho">Tamanho (em)</label>
+<label for="fonte_tamanho"><?php echo te('config_tamanho'); ?></label>
 <input type="number" id="fonte_tamanho" min="0.8" max="3" step="0.1" value="<?php echo h($config['fonte_tamanho']); ?>">
 </div>
 
 <div class="campo">
-<label for="fonte_altura_linha">Altura da linha</label>
+<label for="fonte_altura_linha"><?php echo te('config_altura_linha'); ?></label>
 <input type="number" id="fonte_altura_linha" min="1" max="3" step="0.1" value="<?php echo h($config['fonte_altura_linha']); ?>">
 </div>
 
 <div class="campo">
-<label for="fonte_espacamento">Espaçamento entre letras (px)</label>
+<label for="fonte_espacamento"><?php echo te('config_espacamento'); ?></label>
 <input type="number" id="fonte_espacamento" min="-3" max="10" step="0.5" value="<?php echo h($config['fonte_espacamento']); ?>">
 </div>
 
 <div class="campo">
-<label for="fonte_peso">Peso da fonte</label>
+<label for="fonte_peso"><?php echo te('config_peso'); ?></label>
 <select id="fonte_peso">
 <?php foreach ($opcoes_peso as $valor => $rotulo): ?>
     <option value="<?php echo h($valor); ?>"<?php echo ($config['fonte_peso'] === (string)$valor) ? ' selected' : ''; ?>><?php echo h($rotulo); ?></option>
@@ -461,36 +468,28 @@ foreach ($opcoes_tecla as $valor => $rotulo) {
 
 <div class="campo">
 
-<h3 class="coluna-titulo">Senha</h3>
+<h3 class="coluna-titulo"><?php echo te('config_senha'); ?></h3>
 
-<label for="senha_atual">Senha atual</label>
+<label for="senha_atual"><?php echo te('label_senha_atual'); ?></label>
 <input type="password" id="senha_atual" value="" autocomplete="current-password"<?php echo $desabilitar; ?>>
 
-<label for="senha" style="margin-top:10px;">Nova senha</label>
-<input type="password" id="senha" value="" placeholder="mínimo <?php echo (int)SENHA_MIN; ?> caracteres"
-       autocomplete="new-password"<?php echo $desabilitar; ?>>
+<label for="senha" style="margin-top:10px;"><?php echo te('label_nova_senha'); ?></label>
+<input type="password" id="senha" value="" placeholder="<?php echo te('config_senha_min_placeholder', (int)SENHA_MIN); ?>" autocomplete="new-password"<?php echo $desabilitar; ?>>
 
-<label for="senha2" style="margin-top:10px;">Repita a nova senha</label>
+
+<label for="senha2" style="margin-top:10px;"><?php echo te('label_repita_nova_senha'); ?></label>
 <input type="password" id="senha2" value="" autocomplete="new-password"<?php echo $desabilitar; ?>>
 
-<p class="nota">
-Defina uma senha própria pra facilitar o acesso, no lugar da senha numérica de 6 dígitos
-gerada automaticamente. Deixe os campos vazios para manter a senha atual. Para trocá-la,
-é preciso confirmar a senha atual.
-</p>
+<p class="nota"><?php echo te('config_rodape_senha'); ?></p>
 </div>
 
 <div class="campo">
 
-<h3 class="coluna-titulo">Conta</h3>
+<h3 class="coluna-titulo"><?php echo te('config_conta'); ?></h3>
 
-<button type="button" class="acao secundario" id="botaoApagarConta" onclick="apagarConta()" style="margin-left:0;"<?php echo $desabilitar; ?>>
-    Apagar minha conta
-</button>
+<button type="button" class="acao secundario" id="botaoApagarConta" onclick="apagarConta()" style="margin-left:0;"<?php echo $desabilitar; ?>><?php echo te('config_apagar_conta'); ?></button>
 
-<p class="nota">
-Isso apaga todos os seus textos e configurações de forma permanente e não pode ser desfeito.
-</p>
+<p class="nota"><?php echo te('config_rodape_conta'); ?></p>
 </div>
 
 </div>
@@ -501,23 +500,33 @@ Isso apaga todos os seus textos e configurações de forma permanente e não pod
 
 <div class="acoes">
 
-<button type="button" class="acao secundario" onclick="restaurarPadrao()">
-    Restaurar padrão
-</button>
+<button type="button" class="acao secundario" onclick="restaurarPadrao()"><?php echo te('config_restaurar'); ?></button>
 
-<button type="button" class="acao" onclick="salvarTudo()"<?php echo $desabilitar; ?>>
-    Salvar configuração
-</button>
+<button type="button" class="acao" onclick="salvarTudo()"<?php echo $desabilitar; ?>><?php echo te('config_salvar'); ?></button>
 
-<button type="button" class="acao" onclick="window.location.href = 'index.php'">
-    Voltar
-</button>
+<button type="button" class="acao" onclick="window.location.href = 'index.php'"><?php echo te('config_voltar'); ?></button>
 
 </div>
 
 </div>
 
 <script>
+var T = <?php echo jsonParaScript($LANG); ?>;
+var LANG = <?php echo jsonParaScript($LANG_CODE); ?>;
+var IDIOMA_ATUAL = <?php echo jsonParaScript($LANG_CODE); ?>;
+
+function tjs(k) {
+    var s = (T && T[k]) || k;
+    var args = Array.prototype.slice.call(arguments, 1);
+    var i = 0;
+    return s.replace(/%[sd]/g, function() {
+        var v = args[i++];
+        return (v === undefined) ? '' : String(v);
+    });
+}
+function tnjs(kSing, kPlur, n) {
+    return tjs((n === 1) ? kSing : kPlur, n);
+}
 
 function $(id) {
     return document.getElementById(id);
@@ -598,7 +607,7 @@ function salvarTudo() {
         var valorCor = campo.value;
 
         if (!REGEX_COR.test(valorCor)) {
-            alert('Cor inválida em "' + campo.getAttribute('data-rotulo') + '". Use o formato #rrggbb.');
+            alert(tjs('config_cor_invalida', campo.getAttribute('data-rotulo')));
             return;
         }
 
@@ -611,26 +620,29 @@ function salvarTudo() {
         dados[outros[k]] = $(outros[k]).value;
     }
 
+    dados['idioma'] = $('idioma').value;
+
     var novaSenha = $('senha').value;
 
     if (novaSenha !== '' || $('senha2').value !== '') {
         if (novaSenha.length < SENHA_MIN) {
-            alert('A senha deve ter pelo menos ' + SENHA_MIN + ' caracteres.');
+            alert(tjs('config_senha_curta', SENHA_MIN));
             return;
         }
 
         if (novaSenha !== $('senha2').value) {
-            alert('As senhas não conferem.');
+            alert(tjs('config_senha_diferente'));
             return;
         }
 
         if ($('senha_atual').value === '') {
-            alert('Informe a senha atual para trocá-la.');
+            alert(tjs('config_senha_atual'));
             return;
         }
 
         dados['senha'] = novaSenha;
         dados['senha_atual'] = $('senha_atual').value;
+        
     }
 
     definirBotoes(true);
@@ -657,8 +669,11 @@ function salvarTudo() {
                 setTimeout(function() {
                     $('mensagem').style.display = 'none';
                 }, 2500);
+                if (dados['idioma'] && dados['idioma'] !== IDIOMA_ATUAL) {
+        setTimeout(function() { window.location.reload(); }, 300);
+    }
             } else {
-                alert('Erro ao salvar as configurações' + (resp && resp.erro ? ': ' + resp.erro : '.'));
+                alert(tjs('config_erro_salvar', resp && resp.erro ? ': ' + resp.erro : '.'));
             }
         }
     };
@@ -675,17 +690,8 @@ if (elNeo) {
 }
 
 function apagarConta() {
-    if (!confirm(
-        'Apagar sua conta? Todos os seus textos e configurações serão perdidos para sempre. Essa ação não pode ser desfeita.'
-    )) {
-        return;
-    }
-
-    if (!confirm(
-        'Tem certeza? Não existe como recuperar seus textos depois disso.'
-    )) {
-        return;
-    }
+    if (!confirm(tjs('confirmar_apagar_conta_1'))) return;
+    if (!confirm(tjs('confirmar_apagar_conta_2'))) return;
 
     var botao = $('botaoApagarConta');
     botao.disabled = true;
@@ -709,7 +715,7 @@ function apagarConta() {
                 window.location.href = 'index.php';
             } else {
                 botao.disabled = false;
-                alert('Erro ao apagar a conta' + (resp && resp.erro ? ': ' + resp.erro : '.'));
+                alert(tjs('config_erro_apagar_conta', resp && resp.erro ? ': ' + resp.erro : '.'));
             }
         }
     };
@@ -718,11 +724,7 @@ function apagarConta() {
 }
 
 function restaurarPadrao() {
-    if (!confirm(
-        'Restaurar todas as configurações para os valores originais?'
-    )) {
-        return;
-    }
+    if (!confirm(tjs('config_restaurar_confirm'))) return;
 
     var chaves = cores.concat(camposFonte, camposTecla);
 

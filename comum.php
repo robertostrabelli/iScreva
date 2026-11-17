@@ -16,6 +16,12 @@ define('LOGIN_JANELA', 900);
 // Máximo de textos novos por conta por hora (proteção contra scripts/loops).
 define('CRIAR_MAX_HORA', 30);
 
+// Idioma padrão quando nada foi escolhido.
+define('IDIOMA_PADRAO', 'en');
+
+// Nome do cookie que guarda a preferência por dispositivo.
+define('IDIOMA_COOKIE', 'iscreva_lang');
+
 // FIM DAS OPCOES
 
 
@@ -593,6 +599,9 @@ function validarConfig($chave, $valor) {
             
         case 'estilo_neobrutalista':
             return ($valor === '0' || $valor === '1') ? $valor : null;
+        
+        case 'idioma':
+            return in_array($valor, idiomasValidos(), true) ? $valor : null;
     }
 
     return null;
@@ -790,3 +799,5 @@ function limparLive($contaId) {
     if (!is_file(caminhoDB($m['arquivo_live']))) return true;
     return publicarLive((int)$contaId, 0, '', '', (int)(microtime(true) * 1000));
 }
+
+require_once __DIR__ . '/ling.php';

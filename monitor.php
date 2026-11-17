@@ -3,6 +3,7 @@
 require_once __DIR__ . '/comum.php';
 
 cabecalhosSeguranca();
+iniciarIdioma();
 
 $ehPeek = isset($_GET['peek']);
 
@@ -35,11 +36,7 @@ if (isset($_GET['c']) && is_string($_GET['c'])) {
 }
 
 if ($token === '' && $codigoCurto === '') {
-    monitorErro(
-        "Falta o parâmetro ?t=<token> ou ?c=<codigo>.\n" .
-        "Abra a tela de Ajuda dentro do iScreva para obter o endereço do monitor.",
-        $ehPeek
-    );
+    monitorErro(t('monitor_falta_param'), $ehPeek);
 }
 
 try {
@@ -48,10 +45,7 @@ try {
     $limite = estadoLimite($chaveLimite, 60, 900);
 
     if ($limite['espera'] > 0) {
-        monitorErro(
-            'Muitas tentativas. Tente novamente em ' . ceil($limite['espera'] / 60) . ' minuto(s).',
-            $ehPeek
-        );
+        monitorErro(t('monitor_muitas_tentativas', (int)ceil($limite['espera'] / 60)), $ehPeek);
     }
 
     $conta = null;
@@ -66,7 +60,7 @@ try {
 
     if (!$conta) {
         registrarEvento($chaveLimite);
-        monitorErro('Código inválido.', $ehPeek);
+        monitorErro(t('monitor_codigo_invalido'), $ehPeek);
     }
 
     $monitor = obterMonitorDaConta($conta['id']);
@@ -74,7 +68,7 @@ try {
 
 } catch (Throwable $e) {
     error_log('iScreva monitor: ' . $e->getMessage());
-    monitorErro('Erro interno do servidor.', $ehPeek, false);
+    monitorErro(t('erro_interno'), $ehPeek, false);
 }
 
 $paramPolling = '';
@@ -149,7 +143,7 @@ if ($ehPeek) {
 
     } catch (Throwable $e) {
         error_log('iScreva monitor: ' . $e->getMessage());
-        echo jsonSaida(array('erro' => 'Erro interno do servidor.', 'fatal' => false));
+        echo jsonSaida(array('erro' => t('erro_interno'), 'fatal' => false));
     }
     exit;
 }
@@ -182,12 +176,12 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
 header("Expires: " . gmdate("D, d M Y H:i:s", time() - 3600) . " GMT");
 ?><!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="<?php echo htmlspecialchars(langCodeHtml()); ?>">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow,noimageindex,noarchive">
-<title>iScreva</title>
+<title><?php echo te('titulo_app'); ?></title>
 <style>
 
 * {
@@ -290,16 +284,30 @@ html, body {
     ?></div>
 </div>
 
-<div id="estado">conectando…</div>
+<div id="estado"><?php echo te('monitor_conectando'); ?></div>
 
 <noscript>
-<div style="max-width:640px;margin:0 auto;padding:0 30px 30px;font-family:sans-serif;font-size:14px;color:#666;">
-    O monitor precisa de JavaScript para acompanhar o texto em tempo real.
-    A versão acima é o último estado publicado.
-</div>
+<div style="max-width:640px;margin:0 auto;padding:0 30px 30px;font-family:sans-serif;font-size:14px;color:#666;"><?php echo te('monitor_noscript'); ?></div>
 </noscript>
 
 <script>
+var T = <?php echo jsonParaScript($LANG); ?>;
+var LANG = <?php echo jsonParaScript($LANG_CODE); ?>;
+
+function tjs(k) {
+    var s = (T && T[k]) || k;
+    var args = Array.prototype.slice.call(arguments, 1);
+    var i = 0;
+    return s.replace(/%[sd]/g, function() {
+        var v = args[i++];
+        return (v === undefined) ? '' : String(v);
+    });
+}
+function tnjs(kSing, kPlur, n) {
+    return tjs((n === 1) ? kSing : kPlur, n);
+}
+
+
 (function() {
 
     // Caminho absoluto: funciona tanto em /monitor.php?c=... quanto em /m/CODIGO.
@@ -347,7 +355,7 @@ html, body {
                 ultimoTitulo = '';
                 ultimoConteudo = '';
             }
-            definirEstado('aguardando o editor…', false);
+            definirEstado(tjs('monitor_aguardando'), false);
             return;
         }
 
@@ -375,12 +383,12 @@ html, body {
             }
         }
 
-        definirEstado('espelhando', false);
+        definirEstado(tjs('monitor_espelhando'), false);
     }
 
     function falhar() {
         falhas++;
-        definirEstado(falhas > 4 ? 'sem conexão' : 'sem conexão — tentando…', true);
+        definirEstado(tjs('monitor_sem_conexao'), true);
     }
 
     function tentarDepois(ms) {
@@ -451,7 +459,7 @@ html, body {
             }
 
             if (dados.unchanged) {
-                definirEstado(ativo ? 'espelhando' : 'aguardando o editor…', false);
+                definirEstado(ativo ? tjs('monitor_espelhando') : tjs('monitor_aguardando'), false);
             } else {
                 aplicar(dados);
             }

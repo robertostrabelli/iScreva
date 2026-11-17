@@ -4,6 +4,8 @@ require_once __DIR__ . '/comum.php';
 cabecalhosSeguranca();
 iniciarSessao();
 
+iniciarIdioma();
+
 function criarTextoExemploSeNecessario($db) {
     $stmt = $db->prepare("SELECT valor FROM configuracoes WHERE chave = 'exemplo_criado'");
     $stmt->execute();
@@ -13,14 +15,7 @@ function criarTextoExemploSeNecessario($db) {
     }
 
     $stmt = $db->prepare("INSERT INTO textos (titulo, conteudo) VALUES (?, ?)");
-    $stmt->execute(['Não se curve diante da página em branco', 'Não se curve diante da página em branco como um suplicante diante de um altar inalcançável. Ela não é um juiz, mas sim um campo de batalha à sua espera. O medo de escrever mal é o único pecado imperdoável; o rascunho perfeito é uma miragem que condena ao silêncio os melhores talentos. Arranque a primeira palavra que vier à mente, mesmo que ela saia torta, mesmo que pareça menor do que a ideia que a gerou. Apenas comece, pois o movimento da mão é o único feitiço capaz de quebrar a paralisia da alma.
-
-Esqueça a obra-prima. Hoje, você não precisa erguer uma catedral; precisa apenas assentar o primeiro tijolo na lama. Escrever é um ofício de artesão, não de profeta. A beleza não nasce pronta, ela se revela no intervalo entre a escrita e a reescrita, no suor da revisão que lapida o bruto. Permita-se o caos, a frase que não fecha, o parágrafo que desaba. É na escuridão do manuscrito imperfeito que a luz do estilo finalmente encontra fresta para entrar.
-
-Portanto, sente-se na cadeira e cumpra o seu destino. Escreva como quem respira, porque é exatamente disso que se trata: um ato de sobrevivência do espírito. Não escreva para os outros, escreva para exorcizar o que te habita, para dar forma ao redemoinho de pensamentos que só você ouve. O mundo já tem silêncio demais; ele precisa da sua voz, da sua estranheza, da sua verdade. As palavras não vão se escrever sozinhas. A hora é agora. Pegue a caneta ou encoste os dedos no teclado e, contra todas as dúvidas, vá.
-
-Att. Seu amigo DeepSeek :) 8 de Setembro de 2026.']);
-
+    $stmt->execute([t('exemplo_titulo'), t('exemplo_conteudo')]);
     $stmt = $db->prepare("
         INSERT OR REPLACE INTO configuracoes (chave, valor)
         VALUES ('exemplo_criado', '1')
@@ -32,7 +27,7 @@ function chavesConfiguracaoValidas() {
     return array(
         'cor_fundo', 'cor_barra', 'cor_texto',
         'cor_editor_fundo', 'cor_editor_texto',
-        'fonte_familia', 'fonte_tamanho', 'fonte_altura_linha', 'fonte_espacamento', 'fonte_peso', 'tecla_imagem', 'cor_tecla_texto', 'estilo_neobrutalista'
+        'fonte_familia', 'fonte_tamanho', 'fonte_altura_linha', 'fonte_espacamento', 'fonte_peso', 'tecla_imagem', 'cor_tecla_texto', 'estilo_neobrutalista', 'idioma'
     );
 }
 
@@ -60,7 +55,7 @@ function verificarCSRF() {
     $token = (isset($_POST['csrf']) && is_string($_POST['csrf'])) ? $_POST['csrf'] : '';
     if ($token === '' || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
         header('Content-Type: application/json; charset=utf-8');
-        echo jsonSaida(array('erro' => 'Sessão expirada, recarregue a página'));
+        echo jsonSaida(array('erro' => t('sessao_expirada'), 'codigo' => 'sessao_expirada'));
         exit;
     }
 }
@@ -76,13 +71,13 @@ if (isset($_GET['action'])) {
             header('Content-Type: application/json; charset=utf-8');
         }
 
-        echo jsonSaida(array('erro' => 'Erro interno do servidor.'));
+        echo jsonSaida(array('erro' => t('erro_interno'), 'codigo' => 'erro_interno'));
         exit;
     });
 
     if ($action !== 'login' && !isset($_SESSION['logado'])) {
         header('Content-Type: application/json; charset=utf-8');
-        echo jsonSaida(['erro' => 'Não autenticado']);
+        echo jsonSaida(['erro' => t('nao_autenticado'), 'codigo' => 'nao_autenticado']);
         exit;
     }
 
@@ -109,7 +104,7 @@ if (isset($_GET['action'])) {
             }
 
             header('Content-Type: application/json; charset=utf-8');
-            echo jsonSaida(['erro' => 'Conta não encontrada. Faça login novamente.']);
+            echo jsonSaida(['erro' => t('conta_nao_encontrada'), 'codigo' => 'conta_nao_encontrada']);
             exit;
         }
 
@@ -129,14 +124,14 @@ if (isset($_GET['action'])) {
 
         if (!$texto) {
             header('Content-Type: text/plain; charset=utf-8');
-            echo 'Texto não encontrado.';
+            echo t('texto_nao_encontrado');
             exit;
         }
 
         $nome = trim($texto['titulo']);
 
         if ($nome === '') {
-            $nome = 'texto';
+            $nome = t('arquivo_nome_padrao');
         }
 
         $nome = preg_replace('/[\/\\\\:*?"<>|]/', '-', $nome);
@@ -144,7 +139,7 @@ if (isset($_GET['action'])) {
         $nome = trim($nome);
 
         if ($nome === '') {
-            $nome = 'texto';
+            $nome = t('arquivo_nome_padrao');
         }
 
         $ascii = $nome;
@@ -159,7 +154,7 @@ if (isset($_GET['action'])) {
         $ascii = preg_replace('/[^A-Za-z0-9 ._()-]/', '_', $ascii);
 
         if (trim($ascii, ' ._') === '') {
-            $ascii = 'texto';
+            $ascii = t('arquivo_nome_padrao');
         }
 
         $conteudoTexto = (string)$texto['conteudo'];
@@ -186,8 +181,8 @@ if (isset($_GET['action'])) {
 
             if ($limite['espera'] > 0) {
                 echo jsonSaida(array(
-                    'erro' => 'Muitas tentativas. Tente novamente em ' . ceil($limite['espera'] / 60) . ' minuto(s).'
-                ));
+    'erro' => t('muitas_tentativas_senha', (int)ceil($limite['espera'] / 60))
+));
                 break;
             }
 
@@ -236,12 +231,15 @@ if (isset($_GET['action'])) {
 
                 if ($limite['espera'] > 0) {
                     echo jsonSaida(array(
-                        'erro' => 'Muitas tentativas. Tente novamente em ' . ceil($limite['espera'] / 60) . ' minuto(s).'
-                    ));
+    'erro' => t('muitas_tentativas_senha', (int)ceil($limite['espera'] / 60))
+));
+
+
+
+
+
                 } else {
-                    echo jsonSaida(array(
-                        'erro' => 'Senha ou captcha incorretos. Tentativas restantes: ' . $limite['restantes']
-                    ));
+                    echo jsonSaida(array('erro' => t('falha_login_restantes', $limite['restantes'])));
                 }
 
                 unset(
@@ -308,13 +306,13 @@ if (isset($_GET['action'])) {
 
             if ($limiteCriar['espera'] > 0) {
                 echo jsonSaida(array(
-                    'erro' => 'Muitos textos criados. Tente novamente em ' . ceil($limiteCriar['espera'] / 60) . ' minuto(s).'
-                ));
+    'erro' => t('muitos_textos_criados', (int)ceil($limiteCriar['espera'] / 60))
+));
                 break;
             }
 
-            $titulo = isset($_POST['titulo']) ? trim($_POST['titulo']) : 'Sem título';
-            if ($titulo === '') $titulo = 'Sem título';
+            $titulo = isset($_POST['titulo']) ? trim($_POST['titulo']) : t('sem_titulo');
+            if ($titulo === '') $titulo = t('sem_titulo');
             $titulo = function_exists('mb_substr') ? mb_substr($titulo, 0, 100, 'UTF-8') : substr($titulo, 0, 100);
 
             $stmt = $db->prepare("INSERT INTO textos (titulo, conteudo) VALUES (?, '')");
@@ -334,7 +332,7 @@ if (isset($_GET['action'])) {
             if ($dados) {
                 echo jsonSaida($dados);
             } else {
-                echo jsonSaida(['erro' => 'Texto não encontrado']);
+                echo jsonSaida(['erro' => t('texto_nao_encontrado'), 'codigo' => 'texto_nao_encontrado']);
             }
             break;
 
@@ -343,7 +341,7 @@ if (isset($_GET['action'])) {
             $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
 
             if (!isset($_POST['conteudo']) || !is_string($_POST['conteudo'])) {
-                echo jsonSaida(array('erro' => 'Conteúdo ausente'));
+                echo jsonSaida(array('erro' => t('conteudo_ausente')));
                 break;
             }
 
@@ -351,7 +349,7 @@ if (isset($_GET['action'])) {
             $stmt->execute([$_POST['conteudo'], $id]);
 
             if ($stmt->rowCount() < 1) {
-                echo jsonSaida(array('erro' => 'Texto não encontrado'));
+                echo jsonSaida(array('erro' => t('texto_nao_encontrado')));
                 break;
             }
 
@@ -376,7 +374,7 @@ if (isset($_GET['action'])) {
             $dados = (isset($_POST['dados']) && is_string($_POST['dados'])) ? json_decode($_POST['dados'], true) : null;
 
             if (!is_array($dados)) {
-                echo jsonSaida(array('erro' => 'Dados inválidos'));
+                echo jsonSaida(array('erro' => t('dados_invalidos')));
                 break;
             }
 
@@ -394,7 +392,7 @@ if (isset($_GET['action'])) {
             }
 
             if ($novaSenha !== null && (strlen($novaSenha) < SENHA_MIN || strlen($novaSenha) > SENHA_MAX)) {
-                echo jsonSaida(array('erro' => 'A senha deve ter entre ' . SENHA_MIN . ' e ' . SENHA_MAX . ' caracteres.'));
+                echo jsonSaida(array('erro' => t('senha_tamanho_invalido', SENHA_MIN, SENHA_MAX)));
                 break;
             }
 
@@ -409,7 +407,7 @@ if (isset($_GET['action'])) {
                 $normalizado = validarConfig($chave, $valor);
 
                 if ($normalizado === null) {
-                    echo jsonSaida(array('erro' => 'Valor inválido para "' . $chave . '".'));
+                    echo jsonSaida(array('erro' => t('valor_invalido_chave', $chave)));
                     break 2;
                 }
 
@@ -422,7 +420,7 @@ if (isset($_GET['action'])) {
             if ($novaSenha !== null) {
 
                 if ($contaId <= 0) {
-                    echo jsonSaida(array('erro' => 'Conta não identificada. Faça login novamente.'));
+                    echo jsonSaida(array('erro' => t('conta_nao_identificada')));
                     break;
                 }
 
@@ -430,12 +428,12 @@ if (isset($_GET['action'])) {
                 $limite = estadoLimite($chaveTroca, 5, 3600);
 
                 if ($limite['espera'] > 0) {
-                    echo jsonSaida(array('erro' => 'Muitas tentativas de troca de senha. Tente novamente em ' . ceil($limite['espera'] / 60) . ' minuto(s).'));
+                    echo jsonSaida(array('erro' => t('muitas_tentativas_senha', (int)ceil($limite['espera'] / 60))));
                     break;
                 }
 
                 if ($senhaAtual === null || $senhaAtual === '') {
-                    echo jsonSaida(array('erro' => 'Informe a senha atual para trocá-la.'));
+                    echo jsonSaida(array('erro' => t('config_senha_atual')));
                     break;
                 }
 
@@ -446,7 +444,7 @@ if (isset($_GET['action'])) {
 
                 if (!$stmt->fetchColumn()) {
                     registrarEvento($chaveTroca);
-                    echo jsonSaida(array('erro' => 'Senha atual incorreta.'));
+                    echo jsonSaida(array('erro' => t('senha_atual_incorreta')));
                     break;
                 }
 
@@ -462,7 +460,7 @@ if (isset($_GET['action'])) {
 
                 if ($emUso) {
                     registrarEvento($chaveTroca);
-                    echo jsonSaida(array('erro' => 'Essa senha já está em uso. Escolha outra.'));
+                    echo jsonSaida(array('erro' => t('senha_em_uso')));
                     break;
                 }
             }
@@ -480,6 +478,15 @@ if (isset($_GET['action'])) {
                 $stmt->execute(array(hashCodigo($novaSenha), $contaId));
                 session_regenerate_id(true);
             }
+
+            if (isset($validados['idioma'])) {
+    @setcookie(
+        defined('IDIOMA_COOKIE') ? IDIOMA_COOKIE : 'iscreva_lang',
+        $validados['idioma'],
+        time() + 60 * 60 * 24 * 365,
+        '/'
+    );
+}
 
             echo jsonSaida(array('sucesso' => true));
             break;
@@ -514,9 +521,8 @@ if (isset($_GET['action'])) {
             if ($arquivoPessoal !== null && is_file($arquivoPessoal)) {
                 if (!@unlink($arquivoPessoal)) {
                     $erro = error_get_last();
-                    $aviso = 'A conta foi removida, mas o arquivo do banco não pôde ser apagado do disco' .
-                        ($erro ? ' (' . $erro['message'] . ')' : '') .
-                        '. Verifique as permissões da pasta.';
+                    $aviso = t('aviso_arquivo_nao_apagado',
+    $erro ? ' (' . $erro['message'] . ')' : '');
                 }
 
                 foreach (array('-journal', '-wal', '-shm') as $sufixo) {
@@ -540,7 +546,7 @@ if (isset($_GET['action'])) {
 
             $contaId = isset($_SESSION['conta_id']) ? (int)$_SESSION['conta_id'] : 0;
             if ($contaId <= 0) {
-                echo jsonSaida(array('erro' => 'Conta não identificada.'));
+                echo jsonSaida(array('erro' => t('conta_nao_identificada')));
                 break;
             }
 
@@ -551,7 +557,7 @@ if (isset($_GET['action'])) {
 
             if (isset($_POST['limpar']) && $_POST['limpar'] === '1') {
                 if (!limparLive($contaId)) {
-                    echo jsonSaida(array('erro' => 'Falha ao limpar.'));
+                    echo jsonSaida(array('erro' => t('falha_limpar')));
                     break;
                 }
                 echo jsonSaida(array('sucesso' => true));
@@ -559,24 +565,24 @@ if (isset($_GET['action'])) {
             }
 
             if ($id <= 0) {
-                echo jsonSaida(array('erro' => 'Id inválido.'));
+                echo jsonSaida(array('erro' => t('id_invalido')));
                 break;
             }
 
             if (strlen($conteudo) > 1048576) {
-                echo jsonSaida(array('erro' => 'Texto grande demais para o monitor.'));
+                echo jsonSaida(array('erro' => t('texto_grande_monitor')));
                 break;
             }
 
             $stmt = $db->prepare("SELECT 1 FROM textos WHERE id = ?");
             $stmt->execute(array($id));
             if (!$stmt->fetchColumn()) {
-                echo jsonSaida(array('erro' => 'Texto não encontrado.'));
+                echo jsonSaida(array('erro' => t('texto_nao_encontrado')));
                 break;
             }
 
             if (!publicarLive($contaId, $id, $titulo, $conteudo, $rev)) {
-                echo jsonSaida(array('erro' => 'Falha ao publicar.'));
+                echo jsonSaida(array('erro' => t('falha_publicar')));
                 break;
             }
 
@@ -588,7 +594,7 @@ if (isset($_GET['action'])) {
             break;
 
         default:
-            echo jsonSaida(array('erro' => 'Ação inválida'));
+            echo jsonSaida(array('erro' => t('acao_invalida')));
     }
     exit;
 }
@@ -644,10 +650,10 @@ header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
 header("Expires: " . gmdate("D, d M Y H:i:s", time() - 3600) . " GMT"); ?><!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="<?php echo htmlspecialchars(langCodeHtml()); ?>">
 <head>
 <meta charset="UTF-8">
-<title>iScreva</title>
+<title><?php echo te('titulo_app'); ?></title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -656,7 +662,7 @@ header("Expires: " . gmdate("D, d M Y H:i:s", time() - 3600) . " GMT"); ?><!DOCT
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="iScreva">    
+<meta name="apple-mobile-web-app-title" content="<?php echo te('titulo_app'); ?>">    
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="robots" content="noindex,nofollow,noimageindex,noarchive">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -1168,13 +1174,31 @@ textarea, .frase {
     display: none;
 }
 
+.idioma-login {
+    margin-top: 18px;
+    line-height: 0;
+}
+
+.idioma-login a {
+    display: inline-block;
+    margin: 0 4px;
+}
+
+.idioma-login img {
+    height: 25px;
+    width: auto;
+    max-width: none;
+    border: 0;
+    vertical-align: middle;
+    display: inline-block;
+}
 
 .balao {
     position: relative;
     display: inline-block;
 }
 
-.balao a {
+.balao a, .escolheidioma {
    color: <?php echo htmlspecialchars($config['cor_texto']); ?>;
     text-decoration: none;
 }
@@ -1545,9 +1569,10 @@ body.neobrutalista code {
 
 <div id="login">
     <div id="loginCentro">
-        <div class="logo"><img src="images/<?php echo htmlspecialchars($logoImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="iScreva"></div><br><br>        
+        <div class="logo"><img src="images/<?php echo htmlspecialchars($logoImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo te('titulo_app'); ?>"></div><br><br>
+               
         <form id="formLogin" onsubmit="return false;">        
-            <input placeholder="senha" type="password" id="senha" autofocus>
+            <input placeholder="<?php echo te('senha_placeholder'); ?>" type="password" id="senha" autofocus>
             <input placeholder="<?php echo $_SESSION['captcha_num1'] . '+' . $_SESSION['captcha_num2'] . '='; ?>" type="text" id="captcha" inputmode="numeric" pattern="[0-9]*">
             <br>
             <a title="Login" class="tecla" href="#" onclick="fazerLogin(); return false;">&#x21B5;</a>
@@ -1555,23 +1580,31 @@ body.neobrutalista code {
         </form>
         <?php if ($codigoAcesso !== null): ?>
             <div class="balao"><br>
-                <small><a href="#explicacao">Primeiro acesso?</a></small>
+                <small><a href="#explicacao"><?php echo te('primeiro_acesso'); ?></a></small>
                 <div id="explicacao" class="texto-balao">
                     <a class="xbalao" href="#">X</a><br><br>
-                    Use essa senha para criar sua conta: <strong><?php echo htmlspecialchars($codigoAcesso); ?></strong>
+                    <?php echo te('primeiro_acesso_dica'); ?>
+    <strong><?php echo h($codigoAcesso); ?></strong>
                 </div>                
             </div>
         <?php endif; ?>
+
+        <div class="idioma-login">
+<?php foreach (idiomasDisponiveis() as $cod => $rotulo): ?>
+    <?php if ($cod === $LANG_CODE) continue; ?>
+    <a class="escolheidioma" href="?lang=<?php echo h($cod); ?>"><img src="images/<?php echo h($cod); ?>.png" alt="<?php echo h($rotulo); ?>" title="<?php echo h($rotulo); ?>" height="25"></a>
+<?php endforeach; ?>
+</div>
     </div>
 </div>
 
 <div id="lista">
     <div class="barra-superior">
-        <div class="esquerda"><div class="logop"><img src="images/<?php echo htmlspecialchars($logoImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="iScreva"></div></div>
+        <div class="esquerda"><div class="logop"><img src="images/<?php echo htmlspecialchars($logoImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo te('titulo_app'); ?>"></div></div>
         <div class="direita">
-        <a title="Novo/New" class="tecla" href="#" onclick="novoTexto(); return false;">&#x271A;</a> 
-        <a title="Ajuda/Help" class="tecla" href="#" onclick="mostrarTela('ajuda'); return false;">?</a> 
-        <a title="Fechar/Close" class="tecla" href="#" onclick="deslogar(); return false;">&#x241B;</a>
+        <a title="<?php echo te('novo'); ?>" class="tecla" href="#" onclick="novoTexto(); return false;">&#x271A;</a> 
+        <a title="<?php echo te('ajuda'); ?>" class="tecla" href="#" onclick="mostrarTela('ajuda'); return false;">?</a> 
+        <a title="<?php echo te('fechar'); ?>" class="tecla" href="#" onclick="deslogar(); return false;">&#x241B;</a>
         </div>        
     </div>
     
@@ -1581,109 +1614,133 @@ body.neobrutalista code {
 
 <div id="ajuda">
     <div class="barra-superior">
-        <div class="esquerda"><div class="logop"><img src="images/<?php echo htmlspecialchars($logoImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="iScreva"></div></div>
+        <div class="esquerda"><div class="logop"><img src="images/<?php echo htmlspecialchars($logoImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo te('titulo_app'); ?>"></div></div>
         <div class="direita">
-            <a title="Configurações/Config." class="tecla" href="config.php">C</a>           
-            <a title="Fechar/Close" class="tecla" href="#" onclick="mostrarTela('lista'); carregarLista(); return false;">&#x241B;</a> 
+            <a title="<?php echo te('configuracoes'); ?>" class="tecla" href="config.php">C</a>           
+            <a title="<?php echo te('fechar'); ?>" class="tecla" href="#" onclick="mostrarTela('lista'); carregarLista(); return false;">&#x241B;</a> 
         </div>
     </div>
 <table>
     <tr>
-        <th>Tecla</th><th>Função</th><th>Atalho</th>
+        <th><?php echo te('ajuda_tecla'); ?></th><th><?php echo te('ajuda_funcao'); ?></th><th><?php echo te('ajuda_atalho'); ?></th>
     </tr>
     <tr>
-        <td><a class="teclap" href="#">&#x21B5;</a></td><td>Entrar / Login</td><td>Enter</td>
+        <td><a class="teclap" href="#">&#x21B5;</a></td><td><?php echo te('ajuda_enter'); ?></td><td>Enter</td>
     </tr><tr>
-        <td><a class="teclap" href="#">&#x2b;</a></td><td>Novo / New</td><td>N</td>
+        <td><a class="teclap" href="#">&#x2b;</a></td><td><?php echo te('ajuda_novo'); ?></td><td>N</td>
     </tr><tr>
-        <td><a class="teclap" href="#">?</a></td><td>Ajuda / Help</td><td>H ou ?</td>
+        <td><a class="teclap" href="#">?</a></td><td><?php echo te('ajuda_ajuda'); ?></td><td>H, ?</td>
     </tr><tr>
-        <td><a class="teclap" href="#">C</a></td><td>Configurações / Config.</td><td>C</td>
+        <td><a class="teclap" href="#">C</a></td><td><?php echo te('ajuda_config'); ?></td><td>C</td>
     </tr><tr>
-        <td><a class="teclap" href="#">&#x2421;</a></td><td>Apagar / Delete</td><td>Ctrl + ⌫</td>
+        <td><a class="teclap" href="#">&#x2421;</a></td><td><?php echo te('ajuda_apagar'); ?></td><td>Ctrl + ⌫</td>
     </tr><tr>
-        <td><a class="teclap" href="#">D</a></td><td>Baixar / Download</td><td>Ctrl + D</td>
+        <td><a class="teclap" href="#">D</a></td><td><?php echo te('ajuda_baixar'); ?></td><td>Ctrl + D</td>
     </tr><tr>
-        <td><a class="teclap" href="#">&#x241B;</a></td><td>Fechar / Close</td><td>Esc*</td>
+        <td><a class="teclap" href="#">&#x241B;</a></td><td><?php echo te('ajuda_fechar'); ?></td><td>Esc*</td>
     </tr><tr>
-        <td><a class="teclap" href="#">M</a></td><td>Enviar por email / Send by email</td><td>Ctrl + M</td>
+        <td><a class="teclap" href="#">M</a></td><td><?php echo te('ajuda_email'); ?></td><td>Ctrl + M</td>
     </tr><tr>
-        <td><a class="teclap" href="#">P</a></td><td>Imprimir / Print</td><td>Ctrl + P</td>
+        <td><a class="teclap" href="#">P</a></td><td><?php echo te('ajuda_imprimir'); ?></td><td>Ctrl + P</td>
     </tr><tr>
-        <td><a class="teclap" href="#">No</a></td><td>Não / No</td><td>Esc* ou N</td>
+        <td><a class="teclap" href="#">No</a></td><td><?php echo te('ajuda_nao'); ?></td><td>Esc*, N</td>
     </tr><tr>
-        <td><a class="teclap" href="#">Si</a></td><td>Sim / Yes</td><td>Enter, Y ou S</td>
+        <td><a class="teclap" href="#">Si</a></td><td><?php echo te('ajuda_sim'); ?></td><td>Enter, Y, S</td>
     </tr>
     <tr>
-        <td></td><td>Escolher texto</td><td>↑/↓</td>
+        <td></td><td><?php echo te('ajuda_escolher_texto'); ?></td><td>↑/↓</td>
     </tr>
     <tr>
-        <td></td><td>Abrir texto</td><td>Enter</td>
+        <td></td><td><?php echo te('ajuda_abrir_texto'); ?></td><td>Enter</td>
     </tr>
     <tr>
-        <td></td><td>Salvar (mas é automático)</td><td>Ctrl+S</td>
+        <td></td><td><?php echo te('ajuda_salvar'); ?></td><td>Ctrl+S</td>
     </tr>
     <tr>
-        <td></td><td>* O funcionamento depende do teclado e do dispositivo usados.</td><td></td>
+        <td></td><td><?php echo te('ajuda_esc_nota'); ?></td><td></td>
     </tr>
 </table>
 
 <div class="frase" style="max-width:inherit;">
 <?php if ($urlMonitor !== null): ?>
-        <strong>Espelhar em outro aparelho</strong><br><br>
+        <strong><?php echo te('espelhar'); ?></strong><br>
+        <br>
+        <p><?php echo te('espelhar_nota'); ?></p>
         <code style="word-break:break-all;"><?php echo h($urlMonitor); ?></code> ou <br><?php if (isset($urlMonitorFallback)): ?><code style="word-break:break-all;"><?php echo h($urlMonitorFallback); ?></code>
         <?php endif; ?>
 <?php endif; ?></div>
 <br>
-<div class="frase"><small>"Screvo meu livro à beira-mágoa." Fernando Pessoa</small></div>
+<div class="frase"><small><?php echo te('citacao'); ?></small></div>
 <div class="gh"><small><a href="https://github.com/robertostrabelli/iScreva">GitHub/iScreva</a></small></div>
 </div>
 
 <div id="editor">
     <div class="barra-superior">
         <div class="esquerda">
-            <span class="titulo-edicao" id="tituloEditor">(título)</span>
-            <span class="contador" id="contadorPalavras">0 palavras</span>
-            <span class="contador" id="contadorCaracteres">0 caracteres</span>
-            <span class="contador" id="tempoLeitura">0 min. de leitura</span>
+            <!--<span class="titulo-edicao" id="tituloEditor">(título)</span>-->
+            <span class="titulo-edicao" id="tituloEditor"><?php echo te('placeholder_titulo'); ?></span>
+            <!--<span class="contador" id="contadorPalavras">0 palavras</span>-->
+            <span class="contador" id="contadorPalavras"><?php echo tne('palavra', 'palavras', 0); ?></span>
+            <!--<span class="contador" id="contadorCaracteres">0 caracteres</span>-->
+            <span class="contador" id="contadorCaracteres"><?php echo tne('caractere', 'caracteres', 0); ?></span>
+            <!--<span class="contador" id="tempoLeitura">0 min. de leitura</span>-->
+            <span class="contador" id="tempoLeitura"><?php echo te('min_leitura', 0); ?></span>
         </div>
         <div class="direita">
-            <a title="Fechar/Close" class="tecla" href="#" onclick="fecharEditor(); return false;">&#x241B;</a>            
+            <a title="<?php echo te('fechar'); ?>" class="tecla" href="#" onclick="fecharEditor(); return false;">&#x241B;</a>            
         </div>
     </div>
     <textarea id="conteudoEditor" wrap="soft" autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false"></textarea>
     <div class="barra-inferior">
-        <a title="Apagar/Delete" class="tecla" href="#" onclick="confirmarExclusao(textoAtualId); return false;">&#x2421;</a>
-        <a title="Baixar/Download" class="tecla" href="#" onclick="salvarAntes(function() { baixarTexto(textoAtualId); }); return false;">D</a>
-        <a title="Enviar por e-mail/Send by e-mail" class="tecla" href="#" onclick="salvarAntes(function() { enviarPorEmailId(textoAtualId); }); return false;">M</a>
-        <a title="Imprimir/Print" class="tecla" href="#" onclick="salvarAntes(function() { imprimirTextoId(textoAtualId); }); return false;">P</a>
+        <a title="<?php echo te('apagar'); ?>" class="tecla" href="#" onclick="confirmarExclusao(textoAtualId); return false;">&#x2421;</a>
+        <a title="<?php echo te('baixar'); ?>" class="tecla" href="#" onclick="salvarAntes(function() { baixarTexto(textoAtualId); }); return false;">D</a>
+        <a title="<?php echo te('enviar_email'); ?>" class="tecla" href="#" onclick="salvarAntes(function() { enviarPorEmailId(textoAtualId); }); return false;">M</a>
+        <a title="<?php echo te('imprimir'); ?>" class="tecla" href="#" onclick="salvarAntes(function() { imprimirTextoId(textoAtualId); }); return false;">P</a>
     </div>
     <div id="conteudoImpressao"></div>
 </div>
 
 <div id="visualizarTexto">
     <div class="barra-superior">
-        <div class="esquerda"><span class="titulo-edicao" id="tituloDownload">(título)</span></div>
+        <div class="esquerda">
+            <!--<span class="titulo-edicao" id="tituloDownload">(título)</span>-->
+            <span class="titulo-edicao" id="tituloDownload"><?php echo te('placeholder_titulo'); ?></span>
+    </div>
         <div class="direita">
             <a class="tecla" href="#" onclick="fecharVisualizacaoDownload(); return false;">&#x241B;</a>
         </div>
     </div>
-    <div class="frase"><small>Seu dispositivo não permite salvar o arquivo diretamente. Toque e segure sobre o texto abaixo e escolha "Selecionar tudo" e "Copiar", depois cole onde quiser.</small></div>
+    <div class="frase"><small><?php echo te('download_manual_dica'); ?></small></div>
     <textarea id="conteudoDownload" wrap="soft" autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false"></textarea>
 </div>
 
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
-        <p id="modalMensagem">Deseja salvar antes de fechar?</p>
+        <p id="modalMensagem"><?php echo te('salvar_antes_fechar'); ?></p>
         <input type="text" id="modalInput" style="display:none;">
         <div>
-            <a title="Sim/Yes" class="tecla" href="#" onclick="modalResponder(true); return false;">Si</a> 
-            <a title="Não/No" class="tecla" href="#" onclick="modalResponder(false); return false;">No</a> 
+            <a title="<?php echo te('sim'); ?>" class="tecla" href="#" onclick="modalResponder(true); return false;">Si</a> 
+            <a title="<?php echo te('nao'); ?>" class="tecla" href="#" onclick="modalResponder(false); return false;">No</a> 
         </div>
     </div>
 </div>
 
 <script>
+var T = <?php echo jsonParaScript($LANG); ?>;
+var LANG = <?php echo jsonParaScript($LANG_CODE); ?>;
+
+function tjs(k) {
+    var s = (T && T[k]) || k;
+    var args = Array.prototype.slice.call(arguments, 1);
+    var i = 0;
+    return s.replace(/%[sd]/g, function() {
+        var v = args[i++];
+        return (v === undefined) ? '' : String(v);
+    });
+}
+function tnjs(kSing, kPlur, n) {
+    return tjs((n === 1) ? kSing : kPlur, n);
+}
 
 var usuarioRolando = false;
 var scrollProgramado = false;
@@ -1811,7 +1868,7 @@ function agendarLive() {
 
 function salvarAntes(fn) {
     if (!textoAtualId) {
-        alert('Aguarde um instante e tente de novo.');
+        alert(tjs('aguarde_um_instante'));
         return;
     }
 
@@ -1861,7 +1918,7 @@ function ajax(method, url, dados, callback) {
         if (xhr.readyState !== 4) return;
 
         if (xhr.status !== 200) {
-            callback({erro: 'Erro de conexão'});
+            callback({erro: tjs('erro_conexao')});
             return;
         }
 
@@ -1877,7 +1934,7 @@ function ajax(method, url, dados, callback) {
             if (window.console && console.log) {
                 console.log('Resposta bruta:', JSON.stringify(texto.substring(0, 300)));
             }
-            callback({erro: 'Erro ao processar resposta'});
+            callback({erro: tjs('erro_resposta')});
             return;
         }
 
@@ -1915,14 +1972,14 @@ function fazerLogin() {
     var senha = $('senha').value;
     var captcha = $('captcha').value;
     if (!senha || !captcha) {
-        exibirErro('Preencha todos os campos');
+        exibirErro(tjs('preencha_campos'));
         return;
     }
     ajax('POST', '?action=login', {senha: senha, captcha: captcha}, function(resp) {
         if (resp.sucesso) {
             window.location.reload();
         } else {
-            var msg = resp.erro || 'Falha no login';
+            var msg = resp.erro || tjs('falha_login');
             if (!guardarErroLogin(msg)) {
                 alert(msg);
             }
@@ -1937,7 +1994,7 @@ function carregarLista() {
 
 function renderizarLista(resp) {
     if (resp && resp.erro) {
-        if (resp.erro === 'Não autenticado') {
+        if (resp.codigo === 'nao_autenticado') {
             mostrarTela('login');
         } else {
             alert(resp.erro);
@@ -1947,7 +2004,7 @@ function renderizarLista(resp) {
 
     var html = '';
     if (resp.length === 0) {
-        html = '<div class="vazio">Nenhum texto ainda.<br>Clique em "&#x271A;" para começar.</div>';
+        html = '<div class="vazio">'+ tjs('nenhum_texto') +'</div>';
     } else {
         for (var i = 0; i < resp.length; i++) {
             var item = resp[i];
@@ -2034,10 +2091,10 @@ function escapeHtml(text) {
 
 function novoTexto() {
     acaoPendente = 'criar';
-    $('modalMensagem').textContent = 'Título do novo texto:';
+    $('modalMensagem').textContent = tjs('titulo_novo_texto');
 
     var input = $('modalInput');
-    input.value = 'Meu texto';
+    input.value = tjs('meu_texto');
     input.style.display = 'block';
 
     $('modalOverlay').style.display = '-webkit-box';
@@ -2059,7 +2116,7 @@ function abrirTexto(id) {
 
     var idPedido = textoAtualId;
 
-    $('tituloEditor').textContent = 'Carregando…';
+    $('tituloEditor').textContent = tjs('carregando');
     ta.value = '';
     ta.readOnly = true;
 
@@ -2081,7 +2138,7 @@ function abrirTexto(id) {
 
             if (resp.erro) {
                 ta.readOnly = false;
-                if (resp.erro === 'Não autenticado') {
+                if (resp.codigo === 'nao_autenticado') {
                     mostrarTela('login');
                 } else {
                     alert(resp.erro);
@@ -2092,7 +2149,7 @@ function abrirTexto(id) {
             }
 
             textoAtualId = parseInt(resp.id, 10);
-            textoAtualTitulo = resp.titulo || 'Sem título';
+            textoAtualTitulo = resp.titulo || tjs('sem_titulo');
             conteudoOriginal = resp.conteudo || '';
 
             $('tituloEditor').textContent = textoAtualTitulo;
@@ -2128,7 +2185,7 @@ function verificarRascunho() {
     }
 
     acaoPendente = 'rascunho';
-    $('modalMensagem').textContent = 'Existe uma versão deste texto que não chegou a ser salva no servidor. Recuperar?';
+    $('modalMensagem').textContent = tjs('rascunho_recuperar');
     $('modalOverlay').style.display = '-webkit-box';
 }
 
@@ -2148,16 +2205,16 @@ function baixarTexto(id) {
 
     ajax('GET', '?action=carregar&id=' + encodeURIComponent(id), null, function(resp) {
         if (resp.erro) {
-            alert('Erro ao carregar o texto.');
+            alert(tjs('erro_baixar'));
             return;
         }
-        exibirVisualizacaoDownload(resp.conteudo || '', resp.titulo || 'texto');
+        exibirVisualizacaoDownload(resp.conteudo || '', resp.titulo || tjs('arquivo_nome_padrao'));
     });
 }
 
 function exibirVisualizacaoDownload(conteudo, titulo) {
     var ta = $('conteudoDownload');
-    $('tituloDownload').textContent = titulo || 'texto';
+    $('tituloDownload').textContent = titulo || tjs('arquivo_nome_padrao');
     ta.value = conteudo;
 
     $('visualizarTexto').style.display = '-webkit-box';
@@ -2288,13 +2345,13 @@ function salvarTexto(callback) {
 
                 $('tituloEditor').textContent = textoAtualTitulo + ' ⚠';
 
-                var semSessao = (resp.erro === 'Não autenticado' ||
-                                 resp.erro === 'Sessão expirada, recarregue a página');
+                var semSessao = (resp.codigo === 'nao_autenticado' ||
+                 resp.codigo === 'sessao_expirada');
 
                 if (semSessao) {
-                    alert('Sua sessão expirou. O texto continua guardado neste aparelho: recarregue a página, entre de novo e abra o texto para recuperá-lo.');
+                    alert(tjs('sessao_expirou_dica'));
                 } else if (callbacksSalvamento.length > 0) {
-                    alert('Não foi possível salvar agora. O texto continua aberto.');
+                    alert(tjs('erro_salvar_agora'));
                 } else {
                     clearTimeout(timeoutSalvar);
                     timeoutSalvar = setTimeout(salvarSeNecessario, Math.min(30000, 2000 * falhasSalvamento));
@@ -2347,7 +2404,7 @@ function finalizarSalvamentos(sucesso) {
 
 function reverterTexto() {
     acaoPendente = 'reverter';
-    $('modalMensagem').textContent = 'Descartar alterações não salvas e recarregar a versão salva?';
+    $('modalMensagem').textContent = tjs('descartar_alteracoes');
     $('modalOverlay').style.display = '-webkit-box';
 }
 
@@ -2355,7 +2412,7 @@ function fecharEditor() {
     var conteudoAtual = $('conteudoEditor').value;
     if (conteudoAtual !== conteudoOriginal) {
         acaoPendente = 'fechar';
-        $('modalMensagem').textContent = 'Há alterações não salvas. Salvar antes de fechar?';
+        $('modalMensagem').textContent = tjs('salvar_antes_fechar');
         $('modalOverlay').style.display = '-webkit-box';
     } else {
         aoFecharEditor();
@@ -2364,7 +2421,7 @@ function fecharEditor() {
 
 function confirmarExclusao(id) {
     acaoPendente = 'excluir';
-    $('modalMensagem').textContent = 'Tem certeza que deseja excluir este texto permanentemente?';
+    $('modalMensagem').textContent = tjs('confirmar_exclusao');
     $('modalOverlay').style.display = '-webkit-box';
     $('modalOverlay').setAttribute('data-id-excluir', id);
 }
@@ -2426,7 +2483,7 @@ function modalResponder(sim) {
 
                         carregarLista();
                     } else {
-                        alert('Erro ao excluir: ' + (resp.erro || ''));
+                        alert(tjs('erro_apagar', resp.erro || ''));
                     }
                 });
             }
@@ -2438,8 +2495,8 @@ function modalResponder(sim) {
             var titulo = $('modalInput').value.replace(/^\s+|\s+$/g, '');
 
             if (!titulo) {
-                titulo = 'Sem título';
-            }
+    titulo = tjs('sem_titulo');
+}
 
             var taNovo = $('conteudoEditor');
 
@@ -2467,7 +2524,7 @@ function modalResponder(sim) {
                     clearTimeout(timeoutSalvar);
                     taNovo.value = '';
                     conteudoOriginal = '';
-                    alert('Erro ao criar: ' + (resp.erro || ''));
+                    alert(tjs('erro_criar') + (resp.erro || ''));
                     mostrarTela('lista');
                     carregarLista();
                 }
@@ -2539,9 +2596,9 @@ function atualizarContador() {
     var caracteres = textoOriginal.length;
     var minutosLeitura = palavras > 0 ? Math.max(1, Math.round(palavras / 200)) : 0;
 
-    $('contadorPalavras').textContent = palavras + ' palavra' + (palavras !== 1 ? 's' : '');
-    $('contadorCaracteres').textContent = caracteres + ' caractere' + (caracteres !== 1 ? 's' : '');
-    $('tempoLeitura').textContent = minutosLeitura + ' min. de leitura';
+    $('contadorPalavras').textContent = tnjs('palavra', 'palavras', palavras);
+    $('contadorCaracteres').textContent = tnjs('caractere', 'caracteres', caracteres);
+    $('tempoLeitura').textContent = tjs('min_leitura', minutosLeitura);
 }
 
 function deslogar() {
@@ -2549,7 +2606,7 @@ function deslogar() {
         if (resp.sucesso) {
             window.location.reload();
         } else {
-            alert('Erro ao sair.');
+            alert(tjs('erro_sair'));
         }
     });
 }
@@ -3034,11 +3091,11 @@ function enviarPorEmailId(id) {
         var texto = resp.conteudo || '';
 
         if (!texto.trim()) {
-            alert('O texto está vazio.');
+            alert(tjs('texto_vazio'));
             return;
         }
 
-        var titulo = resp.titulo ? resp.titulo : 'Texto do iScreva';
+        var titulo = resp.titulo ? resp.titulo : tjs('titulo_email_default');
 
         var assunto = encodeURIComponent(titulo);
         var corpo = encodeURIComponent(texto);
